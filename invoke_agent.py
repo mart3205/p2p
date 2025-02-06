@@ -73,11 +73,10 @@ def askQuestion(question, url, endSession=False):
 
 def decode_response(response):
     """
-    Esta función procesa la respuesta que viene en formato event stream.
-    Busca en las líneas de la respuesta la parte que contenga el JSON
-    (identificado por la primera aparición de '{') y la decodifica.
+    Procesa la respuesta en formato event stream de AWS Bedrock.
+    Extrae la primera porción que contenga un objeto JSON completo.
     """
-    # Obtener todas las líneas del stream
+    # Convertir el stream en una lista de líneas
     lines = list(response.iter_lines())
     if not lines:
         return "Error: La respuesta de Bedrock está vacía."
@@ -85,7 +84,7 @@ def decode_response(response):
     print("RAW RESPONSE LINES:", lines)  # Para depuración
 
     json_payload = ""
-    # Buscar la línea que contenga el JSON (se asume que la primera '{' marca el inicio)
+    # Buscar la línea que contenga la primera aparición de '{'
     for line in lines:
         try:
             decoded_line = line.decode('utf-8', errors='ignore')
@@ -100,18 +99,18 @@ def decode_response(response):
     if not json_payload:
         return "Error: No se encontró ningún payload JSON en el event stream."
 
-    print("Extracted JSON payload:", json_payload)  # Para depuración
+    print("Extracted JSON payload:", json_payload)  # Depuración
 
-    # Intentar decodificar el JSON extraído
+    # Usar JSONDecoder para extraer el primer objeto JSON y omitir datos extra
     try:
-        response_json = json.loads(json_payload)
+        decoder = json.JSONDecoder()
+        response_json, idx = decoder.raw_decode(json_payload)
     except json.JSONDecodeError as e:
         return f"Error: Falló la decodificación del JSON. Detalle: {str(e)}"
-    
-    # Si la respuesta contiene el campo "bytes", decodificarlo
+
+    # Procesar la respuesta según el contenido
     if "bytes" in response_json:
         encoded_response = response_json["bytes"]
-        # Agregar padding si es necesario
         missing_padding = len(encoded_response) % 4
         if missing_padding:
             encoded_response += "=" * (4 - missing_padding)
@@ -120,9 +119,7 @@ def decode_response(response):
             return decoded_response
         except Exception as e:
             return f"Error en base64 decoding: {str(e)}"
-
-    # Si en cambio contiene "text", retornarlo
-    if "text" in response_json:
+    elif "text" in response_json:
         return response_json["text"]
 
     return "No valid response found."
