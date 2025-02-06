@@ -69,52 +69,61 @@ def askQuestion(question, url, endSession=False):
     print("RAW RESPONSE:", response.text)  # Debugging line
 
     return decode_response(response)
+# Initiates the decoding reponse
 
 def decode_response(response):
-    response_content = ""
+    """
+    Esta función procesa la respuesta que viene en formato event stream.
+    Busca en las líneas de la respuesta la parte que contenga el JSON
+    (identificado por la primera aparición de '{') y la decodifica.
+    """
+    # Obtener todas las líneas del stream
+    lines = list(response.iter_lines())
+    if not lines:
+        return "Error: La respuesta de Bedrock está vacía."
+    
+    print("RAW RESPONSE LINES:", lines)  # Para depuración
 
+    json_payload = ""
+    # Buscar la línea que contenga el JSON (se asume que la primera '{' marca el inicio)
+    for line in lines:
+        try:
+            decoded_line = line.decode('utf-8', errors='ignore')
+        except Exception as e:
+            print("Error al decodificar la línea:", e)
+            continue
+        pos = decoded_line.find('{')
+        if pos != -1:
+            json_payload = decoded_line[pos:]
+            break
+
+    if not json_payload:
+        return "Error: No se encontró ningún payload JSON en el event stream."
+
+    print("Extracted JSON payload:", json_payload)  # Para depuración
+
+    # Intentar decodificar el JSON extraído
     try:
-        lines = list(response.iter_lines())  # Convertir en lista para inspección
-        if not lines:
-            return "Error: La respuesta de Bedrock está vacía."
-
-        print("RAW RESPONSE LINES:", lines)  # Depuración
-
-        for line in lines:
-            try:
-                decoded_line = line.decode('utf-8').strip()
-                if decoded_line and not decoded_line.startswith(":"):  # Filtrar metadata de eventos
-                    response_content += decoded_line
-            except UnicodeDecodeError:
-                print("Error de decodificación en línea:", line)  # Depuración
-                continue  
-
-        if not response_content:
-            return "Error: No se pudo extraer contenido válido de la respuesta."
-
-        print("RAW RESPONSE (CLEAN):", response_content)  # Depuración
-
-        # Intenta convertir la respuesta en JSON después de limpiar metadatos
-        response_json = json.loads(response_content)
-
-        # Manejo de datos en base64
-        if "bytes" in response_json:
-            encoded_response = response_json["bytes"]
-            missing_padding = len(encoded_response) % 4
-            if missing_padding:
-                encoded_response += "=" * (4 - missing_padding)
-
-            try:
-                decoded_response = base64.b64decode(encoded_response).decode('utf-8')
-                return decoded_response
-            except Exception as e:
-                return f"Error en base64 decoding: {str(e)}"
-
-        if "text" in response_json:
-            return response_json["text"]
-
+        response_json = json.loads(json_payload)
     except json.JSONDecodeError as e:
-        return f"Error: Respuesta no es un JSON válido. Detalle: {str(e)}"
+        return f"Error: Falló la decodificación del JSON. Detalle: {str(e)}"
+    
+    # Si la respuesta contiene el campo "bytes", decodificarlo
+    if "bytes" in response_json:
+        encoded_response = response_json["bytes"]
+        # Agregar padding si es necesario
+        missing_padding = len(encoded_response) % 4
+        if missing_padding:
+            encoded_response += "=" * (4 - missing_padding)
+        try:
+            decoded_response = base64.b64decode(encoded_response).decode('utf-8')
+            return decoded_response
+        except Exception as e:
+            return f"Error en base64 decoding: {str(e)}"
+
+    # Si en cambio contiene "text", retornarlo
+    if "text" in response_json:
+        return response_json["text"]
 
     return "No valid response found."
 
