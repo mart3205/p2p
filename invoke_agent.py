@@ -70,32 +70,26 @@ def askQuestion(question, url, endSession=False):
 
     return decode_response(response)
 
-import base64
-import json
-
 def decode_response(response):
     response_content = ""
 
     try:
-        # Intenta decodificar la respuesta línea por línea
         for line in response.iter_lines():
             try:
                 decoded_line = line.decode('utf-8').strip()
-                if decoded_line:  # Evita líneas vacías
+                if decoded_line and not decoded_line.startswith(":"):
                     response_content += decoded_line
             except UnicodeDecodeError:
                 continue  # Ignorar líneas que no se puedan decodificar
 
-        print("RAW RESPONSE:", response_content)  # Imprimir la respuesta completa para depuración
+        print("RAW RESPONSE (CLEAN):", response_content)  # Depuración
 
-        # Intenta cargar la respuesta como JSON
+        # Intenta convertir la respuesta en JSON después de limpiar metadatos
         response_json = json.loads(response_content)
 
-        # Manejar respuestas en base64
+        # Manejo de datos en base64
         if "bytes" in response_json:
             encoded_response = response_json["bytes"]
-
-            # Verificar si la longitud es un múltiplo de 4 antes de decodificar
             missing_padding = len(encoded_response) % 4
             if missing_padding:
                 encoded_response += "=" * (4 - missing_padding)
@@ -106,7 +100,6 @@ def decode_response(response):
             except Exception as e:
                 return f"Error en base64 decoding: {str(e)}"
 
-        # Si hay un campo de texto, devolverlo directamente
         if "text" in response_json:
             return response_json["text"]
 
