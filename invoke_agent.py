@@ -74,13 +74,23 @@ def decode_response(response):
     response_content = ""
 
     try:
-        for line in response.iter_lines():
+        lines = list(response.iter_lines())  # Convertir en lista para inspección
+        if not lines:
+            return "Error: La respuesta de Bedrock está vacía."
+
+        print("RAW RESPONSE LINES:", lines)  # Depuración
+
+        for line in lines:
             try:
                 decoded_line = line.decode('utf-8').strip()
-                if decoded_line and not decoded_line.startswith(":"):
+                if decoded_line and not decoded_line.startswith(":"):  # Filtrar metadata de eventos
                     response_content += decoded_line
             except UnicodeDecodeError:
-                continue  # Ignorar líneas que no se puedan decodificar
+                print("Error de decodificación en línea:", line)  # Depuración
+                continue  
+
+        if not response_content:
+            return "Error: No se pudo extraer contenido válido de la respuesta."
 
         print("RAW RESPONSE (CLEAN):", response_content)  # Depuración
 
@@ -107,7 +117,6 @@ def decode_response(response):
         return f"Error: Respuesta no es un JSON válido. Detalle: {str(e)}"
 
     return "No valid response found."
-
 
 # Example usage
 def lambda_handler(event, context):
