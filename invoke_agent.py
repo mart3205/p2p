@@ -74,36 +74,46 @@ import base64
 import json
 
 def decode_response(response):
-    # Procesar la respuesta como texto
     response_content = ""
-    for line in response.iter_content():
-        try:
-            response_content += line.decode('utf-8')
-        except:
-            continue
 
-    # Intenta convertir la respuesta en JSON
     try:
+        # Intenta decodificar la respuesta línea por línea
+        for line in response.iter_lines():
+            try:
+                decoded_line = line.decode('utf-8').strip()
+                if decoded_line:  # Evita líneas vacías
+                    response_content += decoded_line
+            except UnicodeDecodeError:
+                continue  # Ignorar líneas que no se puedan decodificar
+
+        print("RAW RESPONSE:", response_content)  # Imprimir la respuesta completa para depuración
+
+        # Intenta cargar la respuesta como JSON
         response_json = json.loads(response_content)
-    except json.JSONDecodeError:
-        return "Error: Respuesta no es un JSON válido."
 
-    # Verifica si la respuesta contiene el campo "bytes"
-    if "bytes" in response_json:
-        encoded_response = response_json["bytes"]
+        # Manejar respuestas en base64
+        if "bytes" in response_json:
+            encoded_response = response_json["bytes"]
 
-        # Verificar si la longitud es un múltiplo de 4 antes de decodificar
-        missing_padding = len(encoded_response) % 4
-        if missing_padding:
-            encoded_response += "=" * (4 - missing_padding)
+            # Verificar si la longitud es un múltiplo de 4 antes de decodificar
+            missing_padding = len(encoded_response) % 4
+            if missing_padding:
+                encoded_response += "=" * (4 - missing_padding)
 
-        try:
-            decoded_response = base64.b64decode(encoded_response).decode('utf-8')
-            return decoded_response
-        except Exception as e:
-            return f"Error en base64 decoding: {str(e)}"
-    # Si no hay campo "bytes", usa otro campo de respuesta
-    return response_json.get('text', 'No valid response found')
+            try:
+                decoded_response = base64.b64decode(encoded_response).decode('utf-8')
+                return decoded_response
+            except Exception as e:
+                return f"Error en base64 decoding: {str(e)}"
+
+        # Si hay un campo de texto, devolverlo directamente
+        if "text" in response_json:
+            return response_json["text"]
+
+    except json.JSONDecodeError as e:
+        return f"Error: Respuesta no es un JSON válido. Detalle: {str(e)}"
+
+    return "No valid response found."
 
 
 # Example usage
