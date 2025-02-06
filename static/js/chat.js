@@ -5,8 +5,7 @@ const apiBaseUrl = "http://54.218.111.118:5000";
 function displayMessage(content, isUserMessage = true) {
   const chatArea = document.getElementById("chatArea");
   const message = document.createElement("div");
-  message.className =
-    "message " + (isUserMessage ? "user-message" : "bot-message");
+  message.className = "message " + (isUserMessage ? "user-message" : "bot-message");
 
   if (!isUserMessage) {
     message.innerHTML = marked.parse(content);

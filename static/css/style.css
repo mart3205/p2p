@@ -195,3 +195,13 @@ button {
 button:hover {
   background-color: rgb(148, 193, 46);
 }
+
+.bot-message {
+  background-color: #f2f2f2;  /* Fondo gris claro */
+  border: 1px solid #ccc;     /* Borde gris */
+  border-radius: 5px;         /* Bordes redondeados */
+  padding: 10px;              /* Espacio interno */
+  margin: 10px 0;             /* Espacio superior e inferior */
+  font-family: Arial, sans-serif;
+  color: #333;
+}
