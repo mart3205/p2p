@@ -70,8 +70,11 @@ def askQuestion(question, url, endSession=False):
 
     return decode_response(response)
 
+import base64
+import json
+
 def decode_response(response):
-    # Process and decode the response
+    # Procesar la respuesta como texto
     response_content = ""
     for line in response.iter_content():
         try:
@@ -79,15 +82,28 @@ def decode_response(response):
         except:
             continue
 
-    # Check if the response has base64 encoded data
-    if "bytes" in response_content:
-        encoded_response = response_content.split("\"")[3]
-        decoded_response = base64.b64decode(encoded_response).decode('utf-8')
-        return decoded_response
-    else:
-        # Extract final response from the JSON response
+    # Intenta convertir la respuesta en JSON
+    try:
         response_json = json.loads(response_content)
-        return response_json.get('text', 'No valid response found')
+    except json.JSONDecodeError:
+        return "Error: Respuesta no es un JSON válido."
+
+    # Verifica si la respuesta contiene el campo "bytes"
+    if "bytes" in response_json:
+        encoded_response = response_json["bytes"]
+
+        # Verificar si la longitud es un múltiplo de 4 antes de decodificar
+        missing_padding = len(encoded_response) % 4
+        if missing_padding:
+            encoded_response += "=" * (4 - missing_padding)
+
+        try:
+            decoded_response = base64.b64decode(encoded_response).decode('utf-8')
+            return decoded_response
+        except Exception as e:
+            return f"Error en base64 decoding: {str(e)}"
+    # Si no hay campo "bytes", usa otro campo de respuesta
+    return response_json.get('text', 'No valid response found')
 
 
 # Example usage

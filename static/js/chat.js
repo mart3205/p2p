@@ -13,7 +13,6 @@ function displayMessage(content, isUserMessage = true) {
   } else {
     message.textContent = content;
   }
-
   chatArea.appendChild(message);
   chatArea.scrollTop = chatArea.scrollHeight;
 }
