@@ -1,0 +1,11 @@
+# Ignorar entornos virtuales
+venv/
+__pycache__/
+
+# Archivos de dependencias
+*.log
+*.pyc
+.DS_Store
+
+# Archivos de configuración de VS Code
+.vscode/
