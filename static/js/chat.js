@@ -1,11 +1,11 @@
-
-const apiBaseUrl = "http://54.218.111.118:5000";
+const apiBaseUrl = "http://54.149.42.242:5000";
 
 // Function to display messages in the chat area
 function displayMessage(content, isUserMessage = true) {
   const chatArea = document.getElementById("chatArea");
   const message = document.createElement("div");
-  message.className = "message " + (isUserMessage ? "user-message" : "bot-message");
+  message.className =
+    "message " + (isUserMessage ? "user-message" : "bot-message");
 
   if (!isUserMessage) {
     message.innerHTML = marked.parse(content);

@@ -14,7 +14,7 @@ region = os.environ.get("AWS_REGION")
 
 # Agent details
 agentId = "HUQTPLRJOU"  # INPUT YOUR AGENT ID HERE
-agentAliasId = "XOWGBA2XMH"  # INPUT YOUR AGENT ALIAS ID HERE
+agentAliasId = "SLUWQOMCK0"  # INPUT YOUR AGENT ALIAS ID HERE
 
 
 def sigv4_request(
@@ -72,19 +72,16 @@ def askQuestion(question, url, endSession=False):
 # Initiates the decoding reponse
 
 def decode_response(response):
-    """
-    Procesa la respuesta en formato event stream de AWS Bedrock.
-    Extrae la primera porción que contenga un objeto JSON completo.
-    """
-    # Convertir el stream en una lista de líneas
+
+    # Convert stream in lines
     lines = list(response.iter_lines())
     if not lines:
         return "Error: La respuesta de Bedrock está vacía."
     
-    print("RAW RESPONSE LINES:", lines)  # Para depuración
+    print("RAW RESPONSE LINES:", lines)  # To debugging
 
     json_payload = ""
-    # Buscar la línea que contenga la primera aparición de '{'
+    # Looks for the line that contains character {
     for line in lines:
         try:
             decoded_line = line.decode('utf-8', errors='ignore')
@@ -99,9 +96,9 @@ def decode_response(response):
     if not json_payload:
         return "Error: No se encontró ningún payload JSON en el event stream."
 
-    print("Extracted JSON payload:", json_payload)  # Depuración
+    print("Extracted JSON payload:", json_payload)  # To Debug
 
-    # Usar JSONDecoder para extraer el primer objeto JSON y omitir datos extra
+    # JSONDecoder para extraer el primer objeto JSON y omitir datos extra
     try:
         decoder = json.JSONDecoder()
         response_json, idx = decoder.raw_decode(json_payload)
