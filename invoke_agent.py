@@ -14,7 +14,7 @@ region = os.environ.get("AWS_REGION")
 
 # Agent details
 agentId = "HUQTPLRJOU"  # INPUT YOUR AGENT ID HERE
-agentAliasId = "SLUWQOMCK0"  # INPUT YOUR AGENT ALIAS ID HERE
+agentAliasId = "THD1M8AE6I"  # INPUT YOUR AGENT ALIAS ID HERE
 
 
 def sigv4_request(
