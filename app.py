@@ -9,8 +9,8 @@ app = Flask(__name__, static_folder='static')
 CORS(app)  # Allow requests from all origins for simplicity
 
 # Agent details
-agentId = "HUQTPLRJOU"  # INPUT YOUR AGENT ID HERE
-agentAliasId = "THD1M8AE6I"  # INPUT YOUR AGENT ALIAS ID HERE
+agentId = "9JHVYC2A4C"  # INPUT YOUR AGENT ID HERE
+agentAliasId = "XLSA7RBRW5"  # INPUT YOUR AGENT ALIAS ID HERE
 theRegion = "us-west-2"
 
 # Configure logging
@@ -39,7 +39,7 @@ def ask():
     end_session = data.get('endSession', False)
 
     url = f'https://bedrock-agent-runtime.{theRegion}.amazonaws.com/agents/{agentId}/agentAliases/{agentAliasId}/sessions/{session_id}/text'
-    print("URL:", url)
+
     try:
         # Log the incoming request for debugging
         logger.info(f"Received question: {question}")

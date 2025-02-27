@@ -10,7 +10,7 @@ body {
   position: fixed;
   top: 0;
   width: 100%;
-  background-color: rgb(29, 67, 112); /* Background color as RGB */
+  background-color: rgb(237, 20, 23); /* Background color as RGB */
   color: #ffffff; /* Font color as white */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 15px 25px;
@@ -119,7 +119,7 @@ body {
 }
 /* Making red the log in button */
 button[type="submit"] {
-  background-color: rgb(29, 67, 112); /* Set background color */
+  background-color: rgb(237, 20, 23); /* Set background color */
   color: #ffffff; /* Set font color to white */
   font-size: 1em; /* Adjust font size if needed */
   padding: 10px 20px;
@@ -130,7 +130,7 @@ button[type="submit"] {
 }
 
 button[type="submit"]:hover {
-  background-color: rgb(29, 67, 112); /* Slightly darker shade on hover */
+  background-color: rgb(237, 20, 23); /* Slightly darker shade on hover */
 }
 
 /* Styles for chatbot.html */
@@ -160,7 +160,7 @@ button[type="submit"]:hover {
 .button-group button {
   width: 100%;
   padding: 10px;
-  background: #1D4370;
+  background: #1d4370;
   color: white;
   border: none;
   border-radius: 5px;
@@ -169,7 +169,7 @@ button[type="submit"]:hover {
 }
 
 .button-group button:hover {
-  background: #94C12E;
+  background: #94c12e;
 }
 
 textarea {
@@ -185,7 +185,7 @@ textarea {
 button {
   padding: 10px 20px;
   font-size: 1em;
-  background-color: rgb(29, 67, 112);
+  background-color: rgb(237, 20, 23);
   color: white;
   border: none;
   border-radius: 4px;
@@ -193,15 +193,15 @@ button {
 }
 
 button:hover {
-  background-color: rgb(148, 193, 46);
+  background-color: rgb(29, 67, 112);
 }
 
 .bot-message {
-  background-color: #f2f2f2;  /* Fondo gris claro */
-  border: 1px solid #ccc;     /* Borde gris */
-  border-radius: 5px;         /* Bordes redondeados */
-  padding: 10px;              /* Espacio interno */
-  margin: 10px 0;             /* Espacio superior e inferior */
+  background-color: #f2f2f2; /* Fondo gris claro */
+  border: 1px solid #ccc; /* Borde gris */
+  border-radius: 5px; /* Bordes redondeados */
+  padding: 10px; /* Espacio interno */
+  margin: 10px 0; /* Espacio superior e inferior */
   font-family: Arial, sans-serif;
   color: #333;
 }

@@ -13,8 +13,8 @@ os.environ["AWS_REGION"] = theRegion
 region = os.environ.get("AWS_REGION")
 
 # Agent details
-agentId = "HUQTPLRJOU"  # INPUT YOUR AGENT ID HERE
-agentAliasId = "THD1M8AE6I"  # INPUT YOUR AGENT ALIAS ID HERE
+agentId = "9JHVYC2A4C"  # INPUT YOUR AGENT ID HERE
+agentAliasId = "XLSA7RBRW5"  # INPUT YOUR AGENT ALIAS ID HERE
 
 
 def sigv4_request(
@@ -45,11 +45,12 @@ def sigv4_request(
         data=req.body
     )
 
+
 def askQuestion(question, url, endSession=False):
     # Prepare the payload
     payload = {
         "inputText": question,
-        "enableTrace": False,
+        "enableTrace": False,  # Disable tracing
         "endSession": endSession
     }
 
@@ -66,60 +67,28 @@ def askQuestion(question, url, endSession=False):
         body=json.dumps(payload)
     )
 
-    print("RAW RESPONSE:", response.text)  # Debugging line
-
     return decode_response(response)
-# Initiates the decoding reponse
+
 
 def decode_response(response):
-
-    # Convert stream in lines
-    lines = list(response.iter_lines())
-    if not lines:
-        return "Error: La respuesta de Bedrock está vacía."
-    
-    print("RAW RESPONSE LINES:", lines)  # To debugging
-
-    json_payload = ""
-    # Looks for the line that contains character {
-    for line in lines:
+    # Process and decode the response
+    response_content = ""
+    for line in response.iter_content():
         try:
-            decoded_line = line.decode('utf-8', errors='ignore')
-        except Exception as e:
-            print("Error al decodificar la línea:", e)
+            response_content += line.decode('utf-8')
+        except:
             continue
-        pos = decoded_line.find('{')
-        if pos != -1:
-            json_payload = decoded_line[pos:]
-            break
 
-    if not json_payload:
-        return "Error: No se encontró ningún payload JSON en el event stream."
+    # Check if the response has base64 encoded data
+    if "bytes" in response_content:
+        encoded_response = response_content.split("\"")[3]
+        decoded_response = base64.b64decode(encoded_response).decode('utf-8')
+        return decoded_response
+    else:
+        # Extract final response from the JSON response
+        response_json = json.loads(response_content)
+        return response_json.get('text', 'No valid response found')
 
-    print("Extracted JSON payload:", json_payload)  # To Debug
-
-    # JSONDecoder para extraer el primer objeto JSON y omitir datos extra
-    try:
-        decoder = json.JSONDecoder()
-        response_json, idx = decoder.raw_decode(json_payload)
-    except json.JSONDecodeError as e:
-        return f"Error: Falló la decodificación del JSON. Detalle: {str(e)}"
-
-    # Procesar la respuesta según el contenido
-    if "bytes" in response_json:
-        encoded_response = response_json["bytes"]
-        missing_padding = len(encoded_response) % 4
-        if missing_padding:
-            encoded_response += "=" * (4 - missing_padding)
-        try:
-            decoded_response = base64.b64decode(encoded_response).decode('utf-8')
-            return decoded_response
-        except Exception as e:
-            return f"Error en base64 decoding: {str(e)}"
-    elif "text" in response_json:
-        return response_json["text"]
-
-    return "No valid response found."
 
 # Example usage
 def lambda_handler(event, context):
@@ -128,7 +97,7 @@ def lambda_handler(event, context):
     endSession = event.get("endSession", False)
 
     url = f'https://bedrock-agent-runtime.{theRegion}.amazonaws.com/agents/{agentId}/agentAliases/{agentAliasId}/sessions/{sessionId}/text'
-    print("URL:", url)
+
     try:
         response = askQuestion(question, url, endSession)
         return {
